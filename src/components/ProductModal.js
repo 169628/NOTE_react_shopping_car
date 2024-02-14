@@ -67,7 +67,7 @@ function ProductModal({ closeModal, getProducts, type, item }) {
         <div className="modal-content">
           <div className="modal-header">
             <h1 className="modal-title fs-5" id="exampleModalLabel">
-              建立新商品
+              {type == "create" ? "建立新商品" : `編輯${item.title}`}
             </h1>
             <button
               type="button"
@@ -212,7 +212,7 @@ function ProductModal({ closeModal, getProducts, type, item }) {
                         type="checkbox"
                         id="is_enabled"
                         name="is_enabled"
-                        value={data.is_enabled}
+                        checked={!!data.is_enabled} //一個"!"是布林真值變假值、2個是布林轉換 0 跟 1
                         className="form-check-input"
                         onChange={changeHandler}
                       />
