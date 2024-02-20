@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import Login from "./pages/Login";
 import Dashboard from "./pages/admin/Dashboard";
 import Products from "./pages/admin/Products";
+import Coupons from "./pages/admin/Coupons";
 
 axios.defaults.baseURL = process.env.REACT_APP_URL;
 
@@ -16,6 +17,7 @@ function App() {
         <Route path="/login" element={<Login />}></Route>
         <Route path="/admin" element={<Dashboard />}>
           <Route path="products" element={<Products />}></Route>
+          <Route path="coupons" element={<Coupons />}></Route>
         </Route>
       </Routes>
     </div>

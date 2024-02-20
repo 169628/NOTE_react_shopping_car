@@ -1,14 +1,13 @@
 import axios from "axios";
 import { useEffect, useState, useRef } from "react";
 
-import ProductModal from "../../components/ProductModal";
+import CouponModal from "../../components/CouponModal";
 import DeleteModal from "../../components/DeleteModal";
-
 import ChangePage from "../../components/ChangePage";
 import { Modal } from "bootstrap";
 
-export default function Products() {
-  const [product, setProduct] = useState([]);
+export default function Coupons() {
+  const [coupons, setCoupons] = useState([]);
   const [pagination, setPagination] = useState({});
   const [modalType, setModalType] = useState("create");
   const [item, setItem] = useState({});
@@ -17,19 +16,18 @@ export default function Products() {
 
   useEffect(() => {
     //取得產品資料
-    getProducts();
+    getCoupons();
     //綁 modal 記得要選有 bootstrap 的
-    modalRef.current = new Modal("#createModal");
+    modalRef.current = new Modal("#couponModal");
     deleteRef.current = new Modal("#deleteModal");
   }, []);
 
-  const getProducts = async (page = 1) => {
+  const getCoupons = async () => {
     const result = await axios.get(
-      `/v2/api/${process.env.REACT_APP_PATH}/admin/products?page=${page}`
+      `/v2/api/${process.env.REACT_APP_PATH}/admin/coupons`
     );
-
     setPagination(result.data.pagination);
-    setProduct(result.data.products);
+    setCoupons(result.data.coupons);
   };
 
   const openModal = (type, item) => {
@@ -54,21 +52,23 @@ export default function Products() {
   const deleteHandler = async (id) => {
     try {
       const result = await axios.delete(
-        `/v2/api/${process.env.REACT_APP_PATH}/admin/product/${id}`
+        `/v2/api/${process.env.REACT_APP_PATH}/admin/coupon/${id}`
       );
       if (result.data.success) {
         closeDeleteModal();
-        getProducts();
+        getCoupons();
       }
-    } catch (error) {}
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
     <>
       <div className="p-3">
-        <ProductModal
+        <CouponModal
           closeModal={closeModal}
-          getProducts={getProducts}
+          getCoupons={getCoupons}
           type={modalType}
           item={item}
         />
@@ -78,7 +78,7 @@ export default function Products() {
           deleteHandler={deleteHandler}
           deleteId={item.id}
         />
-        <h3>產品列表</h3>
+        <h3>優惠卷列表</h3>
         <hr />
         <div className="text-end">
           <button
@@ -88,26 +88,28 @@ export default function Products() {
               openModal("create", item);
             }}
           >
-            建立新商品
+            建立優惠卷
           </button>
         </div>
         <table className="table">
           <thead>
             <tr>
-              <th scope="col">分類</th>
-              <th scope="col">名稱</th>
-              <th scope="col">售價</th>
+              <th scope="col">標題</th>
+              <th scope="col">折扣</th>
+              <th scope="col">到期日</th>
+              <th scope="col">優惠碼</th>
               <th scope="col">啟用狀態</th>
               <th scope="col">編輯</th>
             </tr>
           </thead>
           <tbody>
-            {product.map((item) => {
+            {coupons.map((item) => {
               return (
                 <tr key={item.id}>
-                  <td>{item.category}</td>
                   <td>{item.title}</td>
-                  <td>{item.price}</td>
+                  <td>{item.percent}</td>
+                  <td>{new Date(item.due_date).toString()}</td>
+                  <td>{item.code}</td>
                   {/* is_enabled 值為 1 跟 0 代表 true 跟 false */}
                   <td>{item.is_enabled ? "已啟用" : "未啟用"}</td>
                   <td>
@@ -135,7 +137,7 @@ export default function Products() {
             })}
           </tbody>
         </table>
-        <ChangePage pagination={pagination} pageRender={getProducts} />
+        <ChangePage pagination={pagination} pageRender={getCoupons} />
       </div>
     </>
   );
