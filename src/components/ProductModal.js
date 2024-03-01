@@ -1,5 +1,11 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
+
+import {
+  MessageContext,
+  errorMessage,
+  successMessage,
+} from "../store/messageStore";
 
 // 新增跟編輯都共用一個 modal
 function ProductModal({ closeModal, getProducts, type, item }) {
@@ -15,7 +21,11 @@ function ProductModal({ closeModal, getProducts, type, item }) {
     imageUrl: "主圖網址",
   });
 
+  // 送出跨元件的訊息顯示，message 用不到可以刪掉，但 "," 要留著
+  const [, dispatch] = useContext(MessageContext);
+
   useEffect(() => {
+    // 因新增跟編輯都共用一個 modal 的關係，如果是編輯就用傳進來的資料
     if (type == "edit") {
       setData(item);
     }
@@ -24,6 +34,7 @@ function ProductModal({ closeModal, getProducts, type, item }) {
   const changeHandler = (e) => {
     const { name, value, checked } = e.target;
 
+    // 如果是價格相關，要轉換形別為 number
     if (["price", "origin_price"].includes(name)) {
       setData({
         ...data,
@@ -43,16 +54,25 @@ function ProductModal({ closeModal, getProducts, type, item }) {
   };
 
   const submitHandler = async () => {
-    let api = `/v2/api/${process.env.REACT_APP_PATH}/admin/product`;
-    let method = "post";
-    if (type == "edit") {
-      api += `/${item.id}`;
-      method = "put";
-    }
-    const res = await axios[method](api, { data: data });
-    if (res.data.success) {
-      closeModal();
-      getProducts();
+    try {
+      let api = `/v2/api/${process.env.REACT_APP_PATH}/admin/product`;
+      let method = "post";
+      // 發送 api 前先判斷是新增還是編輯(2個不同api、方法也不同)
+      if (type == "edit") {
+        api += `/${item.id}`;
+        method = "put";
+      }
+      const res = await axios[method](api, { data: data });
+      if (res.data.success) {
+        // 成功送跨元件訊息，封裝在 messageStore
+        successMessage(dispatch, res);
+        closeModal();
+        getProducts();
+      }
+    } catch (error) {
+      console.log(error);
+      // 失敗送跨元件訊息，封裝在 messageStore
+      errorMessage(dispatch, error);
     }
   };
   return (

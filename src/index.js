@@ -3,6 +3,8 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 
 import "./stylesheet/all.scss";
+// npm i bootstrap-icons 然後這邊載入之後，其他頁面都可以使用
+import "bootstrap-icons/font/bootstrap-icons.css";
 import App from "./App";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));

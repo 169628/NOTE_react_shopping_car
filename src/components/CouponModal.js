@@ -1,5 +1,11 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
+
+import {
+  MessageContext,
+  errorMessage,
+  successMessage,
+} from "../store/messageStore";
 
 function CouponModal({ closeModal, getCoupons, type, item }) {
   const [data, setData] = useState({
@@ -8,6 +14,8 @@ function CouponModal({ closeModal, getCoupons, type, item }) {
     percent: 80,
     code: "testCode",
   });
+  const [, dispatch] = useContext(MessageContext);
+  // 跟 products 不一樣的地方在時間
   // 時間一共有3種格式，input 的格式、儲存的時間格式、api 的格式都不同
   const [date, setDate] = useState(new Date());
 
@@ -40,20 +48,26 @@ function CouponModal({ closeModal, getCoupons, type, item }) {
   };
 
   const submitHandler = async () => {
-    const submitData = {
-      ...data,
-      due_date: date.getTime(), //將儲存的時間格式轉成 unix timestamp
-    };
-    let api = `/v2/api/${process.env.REACT_APP_PATH}/admin/coupon`;
-    let method = "post";
-    if (type == "edit") {
-      api += `/${item.id}`;
-      method = "put";
-    }
-    const res = await axios[method](api, { data: submitData });
-    if (res.data.success) {
-      closeModal();
-      getCoupons();
+    try {
+      const submitData = {
+        ...data,
+        due_date: date.getTime(), //將儲存的時間格式轉成 unix timestamp
+      };
+      let api = `/v2/api/${process.env.REACT_APP_PATH}/admin/coupon`;
+      let method = "post";
+      if (type == "edit") {
+        api += `/${item.id}`;
+        method = "put";
+      }
+      const res = await axios[method](api, { data: submitData });
+      if (res.data.success) {
+        successMessage(dispatch, res);
+        closeModal();
+        getCoupons();
+      }
+    } catch (error) {
+      console.log(error);
+      errorMessage(dispatch, error);
     }
   };
 
@@ -117,7 +131,7 @@ function CouponModal({ closeModal, getCoupons, type, item }) {
                     name="due_date"
                     placeholder="請輸入到期日"
                     className="form-control mt-1"
-                    // 年抓出來+"-"、月抓出來+"-"、日抓出來
+                    // 年抓出來加"-"、月抓出來加"-"、日抓出來
                     value={`${date.getFullYear().toString()}-${(
                       date.getMonth() + 1
                     )

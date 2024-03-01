@@ -24,12 +24,16 @@ export default function Products() {
   }, []);
 
   const getProducts = async (page = 1) => {
-    const result = await axios.get(
-      `/v2/api/${process.env.REACT_APP_PATH}/admin/products?page=${page}`
-    );
+    try {
+      const result = await axios.get(
+        `/v2/api/${process.env.REACT_APP_PATH}/admin/products?page=${page}`
+      );
 
-    setPagination(result.data.pagination);
-    setProduct(result.data.products);
+      setPagination(result.data.pagination);
+      setProduct(result.data.products);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const openModal = (type, item) => {

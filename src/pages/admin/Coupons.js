@@ -15,19 +15,21 @@ export default function Coupons() {
   const deleteRef = useRef(null);
 
   useEffect(() => {
-    //取得產品資料
     getCoupons();
-    //綁 modal 記得要選有 bootstrap 的
     modalRef.current = new Modal("#couponModal");
     deleteRef.current = new Modal("#deleteModal");
   }, []);
 
-  const getCoupons = async () => {
-    const result = await axios.get(
-      `/v2/api/${process.env.REACT_APP_PATH}/admin/coupons`
-    );
-    setPagination(result.data.pagination);
-    setCoupons(result.data.coupons);
+  const getCoupons = async (page = 1) => {
+    try {
+      const result = await axios.get(
+        `/v2/api/${process.env.REACT_APP_PATH}/admin/coupons?page=${page}`
+      );
+      setPagination(result.data.pagination);
+      setCoupons(result.data.coupons);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const openModal = (type, item) => {
@@ -110,7 +112,6 @@ export default function Coupons() {
                   <td>{item.percent}</td>
                   <td>{new Date(item.due_date).toString()}</td>
                   <td>{item.code}</td>
-                  {/* is_enabled 值為 1 跟 0 代表 true 跟 false */}
                   <td>{item.is_enabled ? "已啟用" : "未啟用"}</td>
                   <td>
                     <button
